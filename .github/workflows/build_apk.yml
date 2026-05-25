@@ -25,21 +25,27 @@ jobs:
         with:
           channel: stable
 
-      - name: Flutter doctor
-        run: flutter doctor -v
-
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build APK
+        run: flutter build apk --debug || true
 
-      - name: Find APK files
-        run: find build -name "*.apk" -type f
+      - name: Search and copy APK
+        run: |
+          echo "Searching for APK files..."
+          find . -name "*.apk" -type f
+          mkdir -p output
+          APK_FILE=$(find . -name "*.apk" -type f | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+            echo "No APK file found"
+            exit 1
+          fi
+          cp "$APK_FILE" output/almohaseb-pro.apk
+          ls -la output
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: almohaseb-pro-apk
-          path: |
-            build/**/*.apk
+          path: output/almohaseb-pro.apk
